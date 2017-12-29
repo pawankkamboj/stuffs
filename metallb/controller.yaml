@@ -1,0 +1,41 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  namespace: kube-system
+  name: controller
+  labels:
+    app: controller
+spec:
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: controller
+  template:
+    metadata:
+      labels:
+        app: controller
+    spec:
+      containers:
+      - name: controller
+        image: quay.io/metallb/controller:v0.2.1
+        imagePullPolicy: IfNotPresent
+        args:
+        - --port=8080
+        - --kubeconfig=/etc/kubernetes/admin.conf
+        - --v=4
+        ports:
+        - name: monitoring
+          containerPort: 8080
+        resources:
+          limits:
+            cpu: "0.1"
+            memory: "100Mi"
+        securityContext:
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /etc/kubernetes
+      volumes:
+      - name: kubeconfig
+        hostPath:
+          path: /etc/kubernetes

@@ -1,0 +1,52 @@
+apiVersion: apps/v1beta2
+kind: DaemonSet
+metadata:
+  namespace: kube-system
+  name: bgp-speaker
+  labels:
+    app: bgp-speaker
+spec:
+  selector:
+    matchLabels:
+      app: bgp-speaker
+  template:
+    metadata:
+      labels:
+        app: bgp-speaker
+    spec:
+      terminationGracePeriodSeconds: 0
+      hostNetwork: true
+      containers:
+      - name: bgp-speaker
+        image: quay.io/metallb/bgp-speaker:v0.2.1
+        imagePullPolicy: IfNotPresent
+        args:
+        - --port=8180
+        - --kubeconfig=/etc/kubernetes/admin.conf
+        - --v=4
+        env:
+        - name: METALLB_NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: METALLB_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        ports:
+        - name: monitoring
+          containerPort: 8180
+        resources:
+          limits:
+            cpu: "0.1"
+            memory: "100Mi"
+        securityContext:
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: /etc/kubernetes
+          readOnly: true
+      volumes:
+      - name: kubeconfig
+        hostPath:
+          path: /etc/kubernetes
