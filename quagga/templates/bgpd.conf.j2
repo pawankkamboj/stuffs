@@ -1,0 +1,4 @@
+router bgp {{ BGP_Self_ASN }}
+ bgp router-id {{ BGP_Self_ID }} 
+ network {{ BGP_External_Network }}
+ neighbor {{ BGP_Peer }} remote-as {{ BGP_Peer_ASN }}

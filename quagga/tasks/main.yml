@@ -1,0 +1,28 @@
+---
+- name: Install quagga router
+  when: ansible_os_family == "RedHat"
+  yum:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+    -  quagga
+  register: quagga
+
+- name: copy zebra conf file
+  copy: src=zebra.conf  dest=/etc/quagga/zebra.conf
+
+- name: copy bgpd config file
+  template: src="bgpd.conf.j2" dest=/etc/quagga/bgpd.conf
+  register: bgpd
+
+- name: start and enable zebra
+  service: name=zebra enabled=yes state=started
+
+- name: start and enable bgpd
+  service: name=bgpd enabled=yes state=started
+
+- name: reload bgpd
+  when: bgpd|changed
+  service: name=bgpd state=restarted
+
