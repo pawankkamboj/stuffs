@@ -1,0 +1,82 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    app: flannel
+    tier: node
+  name: kube-flannel-ds
+  namespace: kube-system
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: flannel
+      tier: node
+  template:
+    metadata:
+      labels:
+        app: flannel
+        tier: node
+    spec:
+      containers:
+      - command:
+        - /opt/bin/flanneld
+        - --ip-masq
+        - --kube-subnet-mgr
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: quay.io/coreos/flannel:v0.9.1-amd64
+        imagePullPolicy: IfNotPresent
+        name: kube-flannel
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /run
+          name: run
+        - mountPath: /etc/kube-flannel/
+          name: flannel-cfg
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      initContainers:
+      - args:
+        - -f
+        - /etc/kube-flannel/cni-conf.json
+        - /etc/cni/net.d/10-flannel.conf
+        command:
+        - cp
+        image: quay.io/coreos/flannel:v0.9.1-amd64
+        imagePullPolicy: IfNotPresent
+        name: install-cni
+        volumeMounts:
+        - mountPath: /etc/cni/net.d
+          name: cni
+        - mountPath: /etc/kube-flannel/
+          name: flannel-cfg
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+      serviceAccount: flannel
+      serviceAccountName: flannel
+      volumes:
+      - hostPath:
+          path: /run
+          type: ""
+        name: run
+      - hostPath:
+          path: /etc/cni/net.d
+          type: ""
+        name: cni
+      - configMap:
+          defaultMode: 420
+          name: kube-flannel-cfg
+        name: flannel-cfg
+  updateStrategy:
+    type: OnDelete
