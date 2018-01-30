@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: sample-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-app
+  template:
+    metadata:
+      labels:
+        app: sample-app
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - image: luxas/autoscale-demo:v0.1.2
+          name: metrics-provider
+          ports:
+          - containerPort: 8080
+            name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-app
+  labels:
+    app: sample-app
+spec:
+  ports:
+  - name: web
+    port: 80
+    targetPort: 8080
+  selector:
+    app: sample-app
+---

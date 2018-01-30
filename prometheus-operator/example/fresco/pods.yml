@@ -1,0 +1,65 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fresco
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fresco
+      versions: v1
+  template:
+    metadata:
+      labels:
+        app: fresco
+        versions: v1
+      name: nginx
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5556"
+        prometheus.io/path: "/jmxrmi"
+    spec:
+      containers:
+      - name: fresco
+        image: qaregistry.yatra.com/fresco:chat-bot-1
+        imagePullPolicy: Always
+        args:
+        - QA
+        env:
+          - name: JVM_OPTS
+            value: "-Xms3024M -Xmx4048M -Dcom.sun.management.jmxremote  -Dcom.sun.management.jmxremote.port=9000 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:/opt/hostfile/jmx_prometheus/jmx_prometheus_javaagent.jar=5556:/opt/hostfile/jmx_prometheus/tomcat.yml"
+          - name: environment
+            value: "QA"
+          - name: YTENV
+            value: "QA"
+        resources:
+          limits:
+            cpu: 6000m
+            memory: 6500Mi
+          requests:
+            cpu: 1500m
+            memory: 500Mi
+        ports:
+        - containerPort: 8080
+#- pod hooks
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "echo export environment=QA >> /data/yatra/.bash_profile && echo 'export JVM_OPTS=\"-Xms1512M -Xmx4048M\"' >>/data/yatra/.bash_profile"]
+          preStop:
+            exec:
+              command: ["pkill","-15","java"]
+#- Volume mount
+        volumeMounts:
+        - mountPath: "/etc/hosts"
+          name: hostfile
+        - mountPath: "/opt/hostfile/jmx_prometheus"
+          name: opt
+#- volume details
+      volumes:
+      - name: hostfile
+        hostPath:
+         path: /etc/kubernetes/addon/fresco/hosts
+      - name: opt
+        hostPath:
+         path: /etc/kubernetes/addon/fresco/jmx_prometheus

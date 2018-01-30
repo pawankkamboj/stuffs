@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:v0.9.1
+        ports:
+        - containerPort: 9093
+        imagePullPolicy: Always
+        command:
+        - /bin/alertmanager 
+        - -config.file=/etc/alertmanager/config.yml 
+        - -storage.path=/alertmanager 
+        - -web.external-url=http://192.168.61.6:32101/
+        volumeMounts:
+          - mountPath: /etc/alertmanager
+            name: alertmanager
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9093
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1000Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+      volumes:
+        - name: alertmanager
+          configMap:
+            name: alertmanager
+            items:
+              - key: config.yml
+                path: config.yml

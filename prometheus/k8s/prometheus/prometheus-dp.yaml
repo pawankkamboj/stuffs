@@ -1,0 +1,68 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  strategy:
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: prometheus
+      name: prometheus
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 0
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 2000
+        runAsNonRoot: true
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.0.0
+        #imagePullPolicy: Never
+        args:
+          - '--storage.tsdb.path=/prometheus/data'
+          - '--storage.tsdb.retention=30d'
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--web.external-url=http://192.168.61.6:32102/'
+        ports:
+        - name: web
+          containerPort: 9090
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/prometheus
+        - name: alerts-volume
+          mountPath: /etc/alertmanager
+        - name: prometheus
+          mountPath: /prometheus
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1000Mi
+          requests:
+            cpu: 120m
+            memory: 100Mi
+      volumes:
+      - name: config-volume
+        configMap:
+          name: prometheus
+      - name: alerts-volume
+        configMap:
+          name: alerts
+      - name: prometheus
+        hostPath:
+         path: /prometheus/data
+      - name: pki
+        hostPath:
+          path: /etc/kubernetes/pki/pki
+      nodeSelector:
+        kubernetes.io/hostname: docker01.yatra.com

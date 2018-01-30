@@ -1,0 +1,21 @@
+kind: HorizontalPodAutoscaler
+apiVersion: autoscaling/v2beta1
+metadata:
+  name: fresco
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1beta1
+    kind: Deployment
+    name: fresco
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+  - type: Pods
+    pods:
+      metricName: tomcat_threadpool_currentthreadcount
+      targetAverageValue: 50
+  - type: Pods
+    pods:
+      metricName: jvm_memory_bytes_used
+      targetAverageValue: 10000M
+

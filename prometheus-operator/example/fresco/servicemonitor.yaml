@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fresco
+  labels:
+    k8s-app: fresco
+spec:
+  jobLabel: k8s-app
+  selector:
+    matchLabels:
+      k8s-app: fresco
+#  namespaceSelector:
+#    matchNames:
+#    - default
+  endpoints:
+  - port: jmx
+    interval: 15s
+    path: /jmxrmi
+
+
+

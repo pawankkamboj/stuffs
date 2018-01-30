@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: sample-app
+  labels:
+    k8s-app: sample-app
+spec:
+  jobLabel: k8s-app
+  selector:
+    matchLabels:
+      k8s-app: sample-app
+  endpoints:
+  - port: web
+    interval: 15s
+
+
+

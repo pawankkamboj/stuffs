@@ -1,0 +1,18 @@
+kind: HorizontalPodAutoscaler
+apiVersion: autoscaling/v2beta1
+metadata:
+  name: sample-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1beta1
+    kind: Deployment
+    name: sample-app
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+  - type: Pods
+    pods:
+      metricName: http_requests_total
+      #metricName: memory_rss
+      targetAverageValue: 50
+

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: 'true'
+  labels:
+    name: prometheus
+  name: prometheus
+  namespace: monitoring
+spec:
+  selector:
+    app: prometheus
+  type: LoadBalancer
+  clusterIP: 10.60.1.73
+  ports:
+  - name: prometheus
+    protocol: TCP
+    port: 9090
+    nodePort: 32102
+#  - name: 443-6443
+#    port: 443
+#    protocol: TCP
+#    targetPort: 6443
