@@ -45,7 +45,7 @@ spec:
         lifecycle:
           postStart:
             exec:
-              command: ["/bin/sh", "-c", "echo export environment=QA >> /data/yatra/.bash_profile && echo 'export JVM_OPTS=\"-Xms1512M -Xmx4048M\"' >>/data/yatra/.bash_profile"]
+              command: ["/bin/sh", "-c", "echo export environment=QA >> /data/test/.bash_profile && echo 'export JVM_OPTS=\"-Xms1512M -Xmx4048M\"' >>/data/yatra/.bash_profile"]
           preStop:
             exec:
               command: ["pkill","-15","java"]
