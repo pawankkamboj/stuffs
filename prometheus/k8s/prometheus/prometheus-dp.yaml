@@ -65,4 +65,4 @@ spec:
         hostPath:
           path: /etc/kubernetes/pki/pki
       nodeSelector:
-        kubernetes.io/hostname: docker01.yatra.com
+        kubernetes.io/hostname: docker01.test.com
