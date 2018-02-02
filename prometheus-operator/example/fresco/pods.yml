@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: fresco
-        image: qaregistry.yatra.com/fresco:chat-bot-1
+        image: registry.test.com/fresco:1
         imagePullPolicy: Always
         args:
         - QA
