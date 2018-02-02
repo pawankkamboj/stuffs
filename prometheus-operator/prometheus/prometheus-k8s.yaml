@@ -27,7 +27,7 @@ spec:
       name: alertmanager-main
       port: web
   nodeSelector:
-    kubernetes.io/hostname: docker04.yatra.com
+    kubernetes.io/hostname: docker04.test.com
   storage:
     volumeClaimTemplate:
       spec:
