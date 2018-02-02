@@ -6,8 +6,8 @@ metadata:
 data:
   config.yml: |-
     global:
-      smtp_smarthost: 'smtp1.yatra.in:25'
-      smtp_from: 'linuxadmin@yatra.com'
+      smtp_smarthost: 'smtp.test.in:25'
+      smtp_from: 'test@test.com'
       #smtp_auth_username: 'your_smtp_user'
       #smtp_auth_password: 'your_smtp_pass'
     templates:
@@ -28,6 +28,6 @@ data:
     receivers:
     - name: 'default-receiver'
       email_configs:
-      - to: 'pawan.kumar1@yatra.com'
+      - to: 'pawan.kumar@test.com'
         send_resolved: true
         require_tls: false
