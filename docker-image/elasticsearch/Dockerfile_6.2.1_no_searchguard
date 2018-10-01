@@ -1,0 +1,40 @@
+FROM jdk:8u121 
+MAINTAINER linuxadmin@appuser.com
+
+# Install Elasticsearch.
+USER root
+ENV ES_VERSION 6.2.1
+
+RUN ( curl -Lskj https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$ES_VERSION.tar.gz | \
+  gunzip -c - | tar xf - ) && \
+  mv elasticsearch-$ES_VERSION elasticsearch && \
+  rm -rf $(find ./elasticsearch | egrep "(\.(exe|bat)$)") && \
+  yum -y install openssl && \
+  yum clean all
+
+# Set environment
+ENV DISCOVERY_SERVICE="elasticsearch-discovery" CLUSTER_NAME="elasticsearch-default" \
+	ES_JAVA_OPTS="-Xms1g -Xmx1g" \
+	NODE_MASTER="true" NODE_DATA="true" NODE_INGEST="true" NODE_NAME="" \
+	HTTP_ENABLE="true" NETWORK_HOST="_site_" \
+	HTTP_CORS_ENABLE="true" HTTP_CORS_ALLOW_ORIGIN="*" \
+	NUMBER_OF_MASTERS="1" MAX_LOCAL_STORAGE_NODES="1" \
+	SHARD_ALLOCATION_AWARENESS="" SHARD_ALLOCATION_AWARENESS_ATTR="" \
+	MEMORY_LOCK="true" \
+
+
+#- copy config files and other
+COPY config/jvm.options /data/appuser/elasticsearch/config/jvm.options
+COPY config/elasticsearch-6-2-1.yml /data/appuser/elasticsearch/config/elasticsearch.yml
+COPY limits.conf /etc/security/limits.conf
+COPY run.sh /data/appuser/elasticsearch/run.sh
+COPY su-exec /usr/local/bin/su-exec
+
+#- export port
+EXPOSE 9200 9300 
+
+#- entry point
+ENTRYPOINT ["/data/appuser/elasticsearch/run.sh"]
+
+#- command
+CMD ["startup"]

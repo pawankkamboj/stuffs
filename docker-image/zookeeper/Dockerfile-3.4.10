@@ -1,0 +1,33 @@
+#- pull base image.
+FROM jdk:8u121
+
+USER root 
+
+ENV VERSION 3.4.10
+RUN wget -q http://www-eu.apache.org/dist/zookeeper/zookeeper-$VERSION/zookeeper-$VERSION.tar.gz && \
+  tar zxf zookeeper-$VERSION.tar.gz && \
+  mv zookeeper-$VERSION zookeeper && \
+  rm -rf $(find ./zookeeper | egrep "(\.(exe|bat)$)") && \
+  rm -rf zookeeper/docs zookeeper-$VERSION.tar.gz
+
+COPY script/zk* /data/appuser/zookeeper/bin/
+COPY run.sh /usr/bin/run.sh 
+
+RUN yum -y install which nmap-ncat && \
+	mkdir /data/appuser/zookeeper/{data,datalog} && \
+	chown appuser.appuser /data/appuser/zookeeper -R
+
+USER appuser
+ENV ZOO_USER=appuser \
+    ZOO_CONF_DIR=/data/appuser/zookeeper/conf \
+    ZOO_DATA_DIR=/data/appuser/zookeeper/data \
+    ZOO_DATA_LOG_DIR=/data/appuser/zookeeper/datalog \
+    ZOO_PORT=2181 \
+    ZOO_TICK_TIME=2000 \
+    ZOO_INIT_LIMIT=5 \
+    ZOO_SYNC_LIMIT=2 \
+    ZOO_MAXCLIENTCNXNS=60
+
+ENTRYPOINT ["/usr/bin/run.sh"]
+CMD ["/data/appuser/zookeeper/bin/zkServer.sh", "start-foreground"]
+

@@ -1,0 +1,34 @@
+#- pull base image.
+FROM registry.appuser.com/appuser-jdk:8u121
+MAINTAINER LinuxAdmin "linuxadmin@appuser.com"
+
+USER root
+ENV VERSION 11.0.1
+
+#- add package
+RUN yum -y install which nmap-ncat && \
+	yum clean all && \
+	rm -rf /data/appuser/run /data/appuser/logs && \
+	wget -q http://www-eu.apache.org/dist/kafka/0.$VERSION/kafka_2.12-0.$VERSION.tgz && \
+	tar zxf kafka_2.12-0.$VERSION.tgz && \
+	mv kafka_2.12-0.$VERSION kafka && \
+	rm -rf kafka/site-docs kafka_2.12-0.$VERSION.tgz
+
+#- add kafka
+COPY server.properties /data/appuser/kafka/config/server.properties
+ADD jmx_prometheus /data/appuser/jmx_prometheus
+
+#- startup file
+COPY run.sh /usr/bin/run.sh
+
+#- user
+USER appuser
+
+#- work dir
+WORKDIR /data/appuser/kafka
+
+#- entrypoint script
+ENTRYPOINT ["/usr/bin/run.sh"]
+
+#- Use PROD to run on PROD
+CMD  ["PROD"]

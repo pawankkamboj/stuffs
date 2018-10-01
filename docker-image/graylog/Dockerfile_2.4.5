@@ -1,0 +1,34 @@
+FROM jdk:8u121 
+MAINTAINER linuxadmin@appuser.com
+
+# Install Elasticsearch.
+USER root
+ENV VERSION 2.4.5
+RUN wget -q https://packages.graylog2.org/releases/graylog/graylog-$VERSION.tgz && \
+  tar zxfv graylog-$VERSION.tgz && \
+  mv graylog-$VERSION graylog && \
+  rm -rf graylog-$VERSION.tgz logs run
+
+# Set environment
+ENV JAVA_OPTS="-Xms2g -Xmx2g" \
+	GRAYLOG_SERVER_JAVA_OPTS="-XX:NewRatio=1 -XX:MaxMetaspaceSize=256m -server -XX:+ResizeTLAB -XX:+UseConcMarkSweepGC -XX:+CMSConcurrentMTEnabled -XX:+CMSClassUnloadingEnabled -XX:+UseParNewGC -XX:-OmitStackTraceInFastThrow" \
+	CONFIG_FILE="/data/appuser/graylog/config/graylog.conf" \
+	LOG4J="/data/appuser/graylog/config/log4j2.xml" \
+	LD_PATH="/data/appuser/graylog/lib/sigar/" \
+	GRAYLOG_JAR="/data/appuser/graylog/graylog.jar"
+
+#- copy config files and other
+COPY limits.conf /etc/security/limits.conf
+COPY su-exec /usr/local/bin/su-exec 
+COPY config /data/appuser/graylog/config
+COPY plugin-2.4.3/plugin/* /data/appuser/graylog/plugin/
+COPY run.sh /data/appuser/graylog/bin/run.sh
+
+#- export port
+EXPOSE 9001 9000 
+
+#- entry point
+ENTRYPOINT ["/data/appuser/graylog/bin/run.sh"]
+
+#- command
+CMD ["startup"]

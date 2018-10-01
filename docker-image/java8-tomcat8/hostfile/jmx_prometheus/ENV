@@ -1,0 +1,7 @@
+
+
+export JMX_OPTS="-Dcom.sun.management.jmxremote  -Dcom.sun.management.jmxremote.port=9000 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
+
+export PROMETHEUS_OPTS="-javaagent:/opt/hostfile/jmx_prometheus/jmx_prometheus_javaagent.jar=5556:/opt/hostfile/jmx_prometheus/tomcat.yml"
+
+export JAVA_OPTS="-Xms1024M -Xmx4024M $JMX_OPTS $PROMETHEUS_OPTS"
