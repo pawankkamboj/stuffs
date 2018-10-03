@@ -1,0 +1,51 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kube-registry
+  namespace: kube-system
+  labels:
+    product: "kube-registry"
+    version: v0
+    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      product: "kube-registry"
+      version: "v0"
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        product: "kube-registry"
+        version: "v0"
+        kubernetes.io/cluster-service: "true"
+    spec:
+      containers:
+      - name: registry
+        image: registry:2.6.2
+        ports:
+        - containerPort: 5000
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - name: config
+          mountPath: /etc/docker/registry/config.yml
+      - image: nginx:1.13-alpine
+        name: nginx
+        ports:
+        - containerPort: 443
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d
+          name: nginx-config
+      volumes:
+      - name: config
+        hostPath:
+         path: /data/node/docker-registry/config.yml
+      - name: nginx-config
+        hostPath:
+         path: /data/node/docker-registry/nginx

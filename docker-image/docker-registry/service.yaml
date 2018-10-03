@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  labels:
+    product: kube-registry
+  name: kube-registry
+spec:
+  ports:
+  - name: http
+    port: 443
+    targetPort: 443
+    nodePort: 5443
+  selector:
+    product: kube-registry
+  type: NodePort
