@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+
+import time
+import os
+import re
+import requests
+import json
+import datetime
+import pytz
+
+ipfile = "ip.txt"
+cmd = "grep"
+cmpopt = "-w"
+
+url = "http://xxxxx/api/prom/push"
+headers = {'Content-Type':'application/json'}
+#headers = {'Content-Type':'application/json', 'X-Scope-OrgID':'simpleJob'}
+
+
+# Function that will work as tail -f for python
+def follow(thefile):
+    thefile.seek(0,2)
+    while True:
+        line = thefile.readline()
+        if not line:
+            time.sleep(0.1)
+            continue
+        yield line
+
+logfile = open("log/p.log")
+loglines = follow(logfile)
+
+counter = 0
+
+for line in loglines:
+    IP = re.search('DST=(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})', line).group(1)
+    print(IP)
+    
+    runcomm = subprocess.run([cmd, cmpopt, IP, ipfile])
+    res = runcomm.returncode
+    if res == 0:   
+        print("Malicious IP found")
+        curr_datetime = datetime.datetime.now(pytz.timezone('Asia/Kolkata'))
+        curr_datetime = curr_datetime.isoformat('T')
+        newline = line.rstrip() + " " + "MaliciousIP=true"
+        payload = { 
+            'streams': [
+                { 
+                    'labels': '{job=\"simpleJob\", host=\"SimpleHost\"}',
+                     'entries': [
+                         { 
+                             'ts': curr_datetime, 
+                             'line': newline 
+                         }
+                     ] 
+                }
+            ] 
+        }
+        payload = json.dumps(payload)
+        print(payload)
+
+        response = requests.post(url, headers=headers, data=payload, auth=userpass)
+        print(response.content)
+        print(response)
